@@ -16,7 +16,8 @@ class GameScene: SKScene {
     var box3 = SKSpriteNode()
     var box4 = SKSpriteNode()
     var box5 = SKSpriteNode()
-
+    var gameStarted = false
+    var originalPosition: CGPoint?
     override func didMove(to view: SKView) {
 
         //Physic Body
@@ -31,6 +32,7 @@ class GameScene: SKScene {
         bird.physicsBody?.affectedByGravity = false
         bird.physicsBody?.isDynamic = true
         bird.physicsBody?.mass = 0.15
+        originalPosition = bird.position
         
         // Box1
         let boxTexture = SKTexture(imageNamed: "brick")
@@ -91,16 +93,48 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        bird.physicsBody?.applyImpulse(CGVector(dx: 50, dy: 100))
-        bird.physicsBody?.affectedByGravity = true
+
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
- 
+        if gameStarted == false {
+            if let touch = touches.first {
+                let touchLocation = touch.location(in: self)
+                let touchesNodes = nodes(at: touchLocation)
+                if touchesNodes.isEmpty == false {
+                    for node in touchesNodes {
+                        if let sprite = node as? SKSpriteNode {
+                            if sprite == bird {
+                                bird.position = touchLocation
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-   
+        if gameStarted == false {
+            if let touch = touches.first {
+                let touchLocation = touch.location(in: self)
+                let touchesNodes = nodes(at: touchLocation)
+                if touchesNodes.isEmpty == false {
+                    for node in touchesNodes {
+                        if let sprite = node as? SKSpriteNode {
+                            if sprite == bird {
+                              let dx = -(touchLocation.x - originalPosition!.x)
+                                let dy = -(touchLocation.y - originalPosition!.y)
+                                let impules = CGVector(dx: dx, dy: dy)
+                                bird.physicsBody?.applyImpulse(impules)
+                                bird.physicsBody?.affectedByGravity = true
+                                gameStarted = true
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
